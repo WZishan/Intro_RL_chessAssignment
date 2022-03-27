@@ -50,7 +50,7 @@ class Chess_Env:
 
         
         
-    def Initialise_game(self):
+    def Initialise_game(self,new_feature):
         
         
         # START THE GAME BY SETTING PIECIES
@@ -71,13 +71,15 @@ class Chess_Env:
         
         # FEATURES (INPUT TO NN) AT THIS POSITION
         X=self.Features()
-
+        
+        if new_feature:
+            X=self.new_Features()
         
         
         return self.Board, X, allowed_a
         
     
-    def OneStep(self,a_agent,new_reward):
+    def OneStep(self,a_agent,new_reward,new_feature):
         
         if new_reward == False:
             # SET REWARD TO ZERO IF GAME IS NOT ENDED
@@ -150,7 +152,7 @@ class Chess_Env:
         # THE GAME CONTINUES
         else:
             if new_reward == True:
-                R = -0.001
+                R = -0.1
             # THE OPPONENT MOVES THE KING IN A RANDOM SAFE LOCATION
             allowed_enemy_a = np.where(self.a_k2 > 0)[0]
             a_help = int(np.ceil(np.random.rand() * allowed_enemy_a.shape[0]) - 1)
@@ -182,7 +184,8 @@ class Chess_Env:
             allowed_a=np.concatenate([self.a_q1,self.a_k1],0)
             # FEATURES
             X=self.Features()
-            
+            if new_feature:
+                X=self.new_Features()
             
         
         return self.Board, X, allowed_a, R, Done
@@ -207,7 +210,27 @@ class Chess_Env:
         
         return x
         
+    # DEFINITION OF THE FEATURES (SEE ALSO ASSIGNMENT DESCRIPTION)
+    def new_Features(self):
         
+        
+        s_k1 = np.array(self.Board == 1).astype(float).reshape(-1)   # FEATURES FOR KING POSITION
+        s_q1 = np.array(self.Board == 2).astype(float).reshape(-1)   # FEATURES FOR QUEEN POSITION
+        s_k2 = np.array(self.Board == 3).astype(float).reshape(-1)   # FEATURE FOR ENEMY'S KING POSITION
+        
+        check=np.zeros([2])    # CHECK? FEATURE
+        check[self.check]=1   
+        
+        K2dof=np.zeros([8])   # NUMBER OF ALLOWED ACTIONS FOR ENEMY'S KING, ONE-HOT ENCODED
+        K2dof[np.sum(self.dfk2_constrain).astype(int)]=1
+        
+        K1dof=np.zeros([8])   # NUMBER OF ALLOWED ACTIONS FOR ENEMY'S KING, ONE-HOT ENCODED
+        K1dof[np.sum(self.dfk1_constrain).astype(int)]=1
+        
+        # ALL FEATURES...
+        x = np.concatenate([s_k1, s_q1, s_k2, check, K2dof, K1dof],0)
+        
+        return x
 
 
         
