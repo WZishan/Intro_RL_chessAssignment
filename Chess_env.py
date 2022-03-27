@@ -77,10 +77,12 @@ class Chess_Env:
         return self.Board, X, allowed_a
         
     
-    def OneStep(self,a_agent):
+    def OneStep(self,a_agent,new_reward):
         
-        # SET REWARD TO ZERO IF GAME IS NOT ENDED
-        R=0
+        if new_reward == False:
+            # SET REWARD TO ZERO IF GAME IS NOT ENDED
+            R=0
+        
         # SET Done TO ZERO (GAME NOT ENDED)
         Done=0
         
@@ -147,7 +149,8 @@ class Chess_Env:
         
         # THE GAME CONTINUES
         else:
-            
+            if new_reward == True:
+                R = -0.001
             # THE OPPONENT MOVES THE KING IN A RANDOM SAFE LOCATION
             allowed_enemy_a = np.where(self.a_k2 > 0)[0]
             a_help = int(np.ceil(np.random.rand() * allowed_enemy_a.shape[0]) - 1)
